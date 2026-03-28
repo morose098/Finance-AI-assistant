@@ -20,15 +20,19 @@ if 'core_data' not in st.session_state:
 if 'stock_info' not in st.session_state:
     st.session_state.stock_info = {}
 
-# ================= 2. 核心引擎：智能名称映射 =================
-@st.cache_data(ttl=3600)
+# ================= 2. 核心引擎：智能名称映射 (本地极速免封锁版) =================
+@st.cache_data(ttl=86400) # 缓存一天，极速读取
 def load_stock_mapping():
     try:
-        stock_list = ak.stock_info_a_code_name()
-        name_to_code = dict(zip(stock_list['name'], stock_list['code']))
-        code_to_name = dict(zip(stock_list['code'], stock_list['name']))
+        # 直接读取咱们刚刚传到云端的本地 CSV 文件，不再跨国联网！
+        # 注意：一定要加 dtype=str，防止像 000001 这样的代码开头的 0 被吃掉
+        df = pd.read_csv("stock_codes.csv", dtype=str) 
+        
+        name_to_code = dict(zip(df['name'], df['code']))
+        code_to_name = dict(zip(df['code'], df['name']))
         return name_to_code, code_to_name
     except Exception as e:
+        print(f"本地股票字典读取失败: {e}")
         return {}, {}
 
 def get_market_prefix(code):
