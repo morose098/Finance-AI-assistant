@@ -47,12 +47,12 @@ def get_market_prefix(code):
 st.sidebar.header("⚙️ 第一步：获取数据")
 name_to_code, code_to_name = load_stock_mapping()
 user_input = st.sidebar.text_input("请输入公司名称或代码", value="贵州茅台")
-
+current_year = datetime.datetime.now().year
 start_year, end_year = st.sidebar.slider(
     "选择要分析的财报年份范围", 
     min_value=2015, 
     max_value=current_year, 
-    value=(2020, 2026), 
+    value=(2020, max_value), 
     step=1
 )
 
