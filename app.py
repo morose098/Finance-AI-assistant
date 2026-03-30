@@ -145,16 +145,20 @@ if fetch_button:
                 'FEE_COMMISSION_INCOME': '手续费及佣金净收入'
             }
             
-            # 定义一个“黑名单”，把不需要给小白看的系统级无关字段屏蔽掉
-            exclude_cols = ['SECUCODE', 'SECURITY_CODE', 'SECURITY_NAME_ABBR', 'ORG_CODE', 
+            # 👇 【改动1】：把 ORG_TYPE 和其他没用的系统标记加进黑名单
+            exclude_cols = ['SECUCODE', 'SECURITY_CODE', 'SECURITY_NAME_ABBR', 'ORG_CODE', 'ORG_TYPE',
                             'REPORT_DATE', 'NOTICE_DATE', 'UPDATE_DATE', 'CURRENCY', 'REPORT_TYPE', '年份']
             
-            # ⭐️ 核心动态逻辑：爬虫抓到什么，只要不在黑名单里，我们就塞进去什么！
+            # 👇 【改动2】：智能数字清洗逻辑
             for col in annual_df.columns:
                 if col not in exclude_cols:
-                    # 如果字典里有翻译，就用中文名；如果没有，就直接原封不动用它的原始字段名！
-                    cn_name = metric_mapping.get(col, col) 
-                    core_data[cn_name] = annual_df[col]
+                    # 尝试将该列强制转换为数字，如果遇到纯文本会变成空值(NaN)
+                    numeric_col = pd.to_numeric(annual_df[col], errors='coerce')
+                    
+                    # 只有当这列数据不全为空时（说明它里面确实包含有效的财务数字金额），才保留它！
+                    if not numeric_col.isna().all():
+                        cn_name = metric_mapping.get(col, col) 
+                        core_data[cn_name] = numeric_col # 直接把清洗干净的纯数字列存进去
             
             st.session_state.core_data = core_data
             st.session_state.stock_info = {'name': stock_name, 'code': stock_code, 'start': start_year, 'end': end_year}
