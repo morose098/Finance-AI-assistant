@@ -117,62 +117,85 @@ if fetch_button:
             core_data = pd.DataFrame()
             core_data['报告期'] = annual_df['REPORT_DATE'].str[:10]
             
-            # --- 终极完美版：全量财报中英文对照字典 ---
+           # --- 终极海量版：全行业财报中英文对照字典（涵盖一般企业、银行、保险、证券） ---
             metric_mapping = {
-                # 1. 收入类
+                # 1. 基础收入类
                 'TOTAL_OPERATE_INCOME': '营业总收入',
                 'OPERATE_INCOME': '营业收入',
                 'INTEREST_INCOME': '利息收入',
                 'EARNED_PREMIUM': '已赚保费',
                 'FEE_COMMISSION_INCOME': '手续费及佣金收入',
+                'OTHER_BUSINESS_INCOME': '其他业务收入',
                 
-                # 2. 成本与费用类
+                # 2. 保险/金融专属收入与收益
+                'INSURANCE_INCOME': '保费业务收入',
+                'REINSURE_INCOME': '分保费收入',
+                'REINSURE_PREMIUM': '应收分保合同准备金',
+                'INVEST_INCOME': '投资收益',
+                'INVEST_JOINT_INCOME': '对联营/合营企业投资收益',
+                'FAIRVALUE_CHANGE_INCOME': '公允价值变动收益',
+                'EXCHANGE_INCOME': '汇兑收益',
+                'ASSET_DISPOSAL_INCOME': '资产处置收益',
+                'OTHER_INCOME': '其他收益',
+
+                # 3. 基础成本与费用类
                 'TOTAL_OPERATE_COST': '营业总成本',
                 'OPERATE_COST': '营业支出(成本)',
+                'OPERATE_EXPENSE': '营业支出',
+                'SALE_EXPENSE': '销售费用',
+                'MANAGE_EXPENSE': '管理费用',
+                'RESEARCH_EXPENSE': '研发费用',
+                'FINANCE_EXPENSE': '财务费用',
+                'BUSINESS_MANAGE_EXPENSE': '业务及管理费',
+                'OPERATE_TAX_ADD': '税金及附加',
+                
+                # 4. 保险/金融专属支出与减值
                 'INTEREST_EXPENSE': '利息支出',
                 'FE_INTEREST_EXPENSE': '金融类利息支出',
                 'FE_INTEREST_INCOME': '金融类利息收入',
                 'FEE_COMMISSION_EXPENSE': '手续费及佣金支出',
                 'SURRENDER_VALUE': '退保金',
+                'COMPENSATE_EXPENSE': '赔付支出',
                 'NET_COMPENSATE_EXPENSE': '赔付支出净额',
-                'NET_CONTRACT_RESERVE': '提取保险准备金净额',
-                'POLICY_DIVIDEND_EXPENSE': '保单红利支出',
+                'AMORTIZE_COMPENSATE_EXPENSE': '摊回赔付支出',
+                'EXTRACT_INSURANCE_RESERVE': '提取保险责任准备金',
+                'AMORTIZE_INSURANCE_RESERVE': '摊回保险责任准备金',
+                'EXTRACT_UNEXPIRED_RESERVE': '提取未到期责任准备金',
+                'POLICY_BONUS_EXPENSE': '保单红利支出',
                 'REINSURE_EXPENSE': '分保费用',
-                'OPERATE_TAX_ADD': '税金及附加',
-                'SALE_EXPENSE': '销售费用',
-                'MANAGE_EXPENSE': '管理费用',
-                'RESEARCH_EXPENSE': '研发费用',
-                'FINANCE_EXPENSE': '财务费用',
-                
-                # 3. 收益与损失类
-                'OTHER_INCOME': '其他收益',
-                'INVEST_INCOME': '投资收益',
-                'INVEST_JOINT_INCOME': '对联营/合营企业投资收益',
-                'FAIRVALUE_CHANGE_INCOME': '公允价值变动收益', # 修正拼写
+                'AMORTIZE_REINSURE_EXPENSE': '摊回分保费用',
                 'CREDIT_IMPAIRMENT_LOSS': '信用减值损失',
                 'ASSET_IMPAIRMENT_LOSS': '资产减值损失',
-                'ASSET_DISPOSAL_INCOME': '资产处置收益', # 新增
-                'EXCHANGE_INCOME': '汇兑收益',
+                'CREDITOR_IMPAIRMENT': '债权投资减值',
                 
-                # 4. 利润类
+                # 5. 利润类
                 'OPERATE_PROFIT': '营业利润',
-                'NONBUSINESS_INCOME': '营业外收入', # 修正拼写
-                'NONBUSINESS_EXPENSE': '营业外支出', # 修正拼写
+                'NONBUSINESS_INCOME': '营业外收入', 
+                'NONBUSINESS_EXPENSE': '营业外支出', 
                 'TOTAL_PROFIT': '利润总额',
                 'INCOME_TAX': '所得税费用',
                 'NETPROFIT': '净利润',
-                'CONTINUED_NETPROFIT': '持续经营净利润', # 修正拼写
-                'DISCONTINUED_NETPROFIT': '终止经营净利润', # 修正拼写
+                'CONTINUED_NETPROFIT': '持续经营净利润', 
+                'DISCONTINUED_NETPROFIT': '终止经营净利润',
                 'PARENT_NETPROFIT': '归母净利润',
                 'MINORITY_INTEREST': '少数股东损益',
                 'DEDUCT_PARENT_NETPROFIT': '扣非净利润',
                 
-                # 5. 每股收益与综合收益
+                # 6. 每股收益与复杂的综合收益(OCI)
                 'BASIC_EPS': '基本每股收益',
                 'DILUTED_EPS': '稀释每股收益',
                 'OTHER_COMPREHENSIVE_INCOME': '其他综合收益',
                 'PARENT_OCI': '归母其他综合收益',
-                'ABLE_OCI': '可重分类进损益的其他综合收益',
+                'MINORITY_OCI': '少数股东其他综合收益',
+                'UNABLE_OCI': '不能重分类进损益的综合收益',
+                'ABLE_OCI': '可重分类进损益的综合收益',
+                'RIGHTLAW_UNABLE_OCI': '权益法下不能转损益的收益',
+                'RIGHTLAW_ABLE_OCI': '权益法下可转损益的收益',
+                'AFA_FAIRVALUE_CHANGE': '可供出售金融资产公允价值变动',
+                'HMI_AFA': '持有至到期投资重分类收益',
+                'OTHERRIGHT_FAIRVALUE_CHANGE': '其他权益工具公允价值变动',
+                'CREDITOR_FAIRVALUE_CHANGE': '债权投资公允价值变动',
+                'FINANCE_OCI_AMT': '金融资产重分类计入的综合收益',
                 'TOTAL_COMPREHENSIVE_INCOME': '综合收益总额',
                 'PARENT_TCI': '归母综合收益总额',
                 'MINORITY_TCI': '少数股东综合收益',
