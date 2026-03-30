@@ -52,7 +52,7 @@ start_year, end_year = st.sidebar.slider(
     "选择要分析的财报年份范围", 
     min_value=2015, 
     max_value=current_year, 
-    value=(2020, max_value), 
+    value=(2020, current_year), 
     step=1
 )
 
