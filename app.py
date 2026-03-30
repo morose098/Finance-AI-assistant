@@ -114,7 +114,7 @@ if fetch_button:
                 
             annual_df = annual_df.sort_values('年份', ascending=False)
             
-           core_data = pd.DataFrame()
+            core_data = pd.DataFrame()
             core_data['报告期'] = annual_df['REPORT_DATE'].str[:10]
             
             # --- 升级版：动态指标字典（涵盖一般企业与金融类） ---
