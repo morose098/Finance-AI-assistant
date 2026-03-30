@@ -117,7 +117,7 @@ if fetch_button:
             core_data = pd.DataFrame()
             core_data['报告期'] = annual_df['REPORT_DATE'].str[:10]
             
-           # --- 终极版：超全量财报中英文对照字典（涵盖 99% 的核心财务指标） ---
+            # --- 终极完美版：全量财报中英文对照字典 ---
             metric_mapping = {
                 # 1. 收入类
                 'TOTAL_OPERATE_INCOME': '营业总收入',
@@ -130,6 +130,8 @@ if fetch_button:
                 'TOTAL_OPERATE_COST': '营业总成本',
                 'OPERATE_COST': '营业支出(成本)',
                 'INTEREST_EXPENSE': '利息支出',
+                'FE_INTEREST_EXPENSE': '金融类利息支出',
+                'FE_INTEREST_INCOME': '金融类利息收入',
                 'FEE_COMMISSION_EXPENSE': '手续费及佣金支出',
                 'SURRENDER_VALUE': '退保金',
                 'NET_COMPENSATE_EXPENSE': '赔付支出净额',
@@ -146,20 +148,21 @@ if fetch_button:
                 'OTHER_INCOME': '其他收益',
                 'INVEST_INCOME': '投资收益',
                 'INVEST_JOINT_INCOME': '对联营/合营企业投资收益',
-                'FAIR_VALUE_CHANGE_INCOME': '公允价值变动收益',
+                'FAIRVALUE_CHANGE_INCOME': '公允价值变动收益', # 修正拼写
                 'CREDIT_IMPAIRMENT_LOSS': '信用减值损失',
                 'ASSET_IMPAIRMENT_LOSS': '资产减值损失',
+                'ASSET_DISPOSAL_INCOME': '资产处置收益', # 新增
                 'EXCHANGE_INCOME': '汇兑收益',
                 
                 # 4. 利润类
                 'OPERATE_PROFIT': '营业利润',
-                'NONOPERATE_INCOME': '营业外收入',
-                'NONOPERATE_EXPENSE': '营业外支出',
+                'NONBUSINESS_INCOME': '营业外收入', # 修正拼写
+                'NONBUSINESS_EXPENSE': '营业外支出', # 修正拼写
                 'TOTAL_PROFIT': '利润总额',
                 'INCOME_TAX': '所得税费用',
                 'NETPROFIT': '净利润',
-                'CONTINUE_OPERATE_NP': '持续经营净利润',
-                'DISCONTINUE_OPERATE_NP': '终止经营净利润',
+                'CONTINUED_NETPROFIT': '持续经营净利润', # 修正拼写
+                'DISCONTINUED_NETPROFIT': '终止经营净利润', # 修正拼写
                 'PARENT_NETPROFIT': '归母净利润',
                 'MINORITY_INTEREST': '少数股东损益',
                 'DEDUCT_PARENT_NETPROFIT': '扣非净利润',
@@ -167,25 +170,36 @@ if fetch_button:
                 # 5. 每股收益与综合收益
                 'BASIC_EPS': '基本每股收益',
                 'DILUTED_EPS': '稀释每股收益',
+                'OTHER_COMPREHENSIVE_INCOME': '其他综合收益',
+                'PARENT_OCI': '归母其他综合收益',
+                'ABLE_OCI': '可重分类进损益的其他综合收益',
                 'TOTAL_COMPREHENSIVE_INCOME': '综合收益总额',
-                'PARENT_COMPREHENSIVE_INCOME': '归母综合收益总额',
-                'MINORITY_COMPREHENSIVE_INCOME': '少数股东综合收益'
+                'PARENT_TCI': '归母综合收益总额',
+                'MINORITY_TCI': '少数股东综合收益',
+                'CONVERT_DIFF': '外币报表折算差额'
             }
             
-            # 👇 【改动1】：把 ORG_TYPE 和其他没用的系统标记加进黑名单
-            exclude_cols = ['SECUCODE', 'SECURITY_CODE', 'SECURITY_NAME_ABBR', 'ORG_CODE', 'ORG_TYPE',
+            # 把 SECURITY_TYPE 也加入黑名单屏蔽掉
+            exclude_cols = ['SECUCODE', 'SECURITY_CODE', 'SECURITY_NAME_ABBR', 'ORG_CODE', 'ORG_TYPE', 'SECURITY_TYPE_CODE', 'SECURITY_TYPE',
                             'REPORT_DATE', 'NOTICE_DATE', 'UPDATE_DATE', 'CURRENCY', 'REPORT_TYPE', '年份']
             
-            # 👇 【改动2】：智能数字清洗逻辑
+            # ⭐️ 终极智能翻译 + 数字清洗逻辑
             for col in annual_df.columns:
                 if col not in exclude_cols:
-                    # 尝试将该列强制转换为数字，如果遇到纯文本会变成空值(NaN)
                     numeric_col = pd.to_numeric(annual_df[col], errors='coerce')
                     
-                    # 只有当这列数据不全为空时（说明它里面确实包含有效的财务数字金额），才保留它！
                     if not numeric_col.isna().all():
-                        cn_name = metric_mapping.get(col, col) 
-                        core_data[cn_name] = numeric_col # 直接把清洗干净的纯数字列存进去
+                        # --- 智能翻译引擎 ---
+                        if col in metric_mapping:
+                            cn_name = metric_mapping[col]
+                        elif col.endswith('_YOY'): # 💡 重点：自动识别所有的同比增速指标
+                            base_col = col.replace('_YOY', '')
+                            base_name = metric_mapping.get(base_col, base_col) # 查出它的中文本名
+                            cn_name = f"{base_name}_同比(%)" # 自动拼接后缀
+                        else:
+                            cn_name = col # 极其冷门的兜底
+                            
+                        core_data[cn_name] = numeric_col
             
             st.session_state.core_data = core_data
             st.session_state.stock_info = {'name': stock_name, 'code': stock_code, 'start': start_year, 'end': end_year}
