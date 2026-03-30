@@ -117,32 +117,59 @@ if fetch_button:
             core_data = pd.DataFrame()
             core_data['报告期'] = annual_df['REPORT_DATE'].str[:10]
             
-            # --- 升级版：动态指标字典（涵盖一般企业与金融类） ---
+           # --- 终极版：超全量财报中英文对照字典（涵盖 99% 的核心财务指标） ---
             metric_mapping = {
+                # 1. 收入类
                 'TOTAL_OPERATE_INCOME': '营业总收入',
                 'OPERATE_INCOME': '营业收入',
+                'INTEREST_INCOME': '利息收入',
+                'EARNED_PREMIUM': '已赚保费',
+                'FEE_COMMISSION_INCOME': '手续费及佣金收入',
+                
+                # 2. 成本与费用类
                 'TOTAL_OPERATE_COST': '营业总成本',
-                'OPERATE_COST': '营业支出/成本',
+                'OPERATE_COST': '营业支出(成本)',
+                'INTEREST_EXPENSE': '利息支出',
+                'FEE_COMMISSION_EXPENSE': '手续费及佣金支出',
+                'SURRENDER_VALUE': '退保金',
+                'NET_COMPENSATE_EXPENSE': '赔付支出净额',
+                'NET_CONTRACT_RESERVE': '提取保险准备金净额',
+                'POLICY_DIVIDEND_EXPENSE': '保单红利支出',
+                'REINSURE_EXPENSE': '分保费用',
+                'OPERATE_TAX_ADD': '税金及附加',
                 'SALE_EXPENSE': '销售费用',
                 'MANAGE_EXPENSE': '管理费用',
                 'RESEARCH_EXPENSE': '研发费用',
                 'FINANCE_EXPENSE': '财务费用',
-                'OPERATE_PROFIT': '营业利润',
-                'TOTAL_PROFIT': '利润总额',
-                'PARENT_NETPROFIT': '归母净利润',
-                'NETPROFIT': '净利润',
-                'DEDUCT_PARENT_NETPROFIT': '扣非净利润',
-                'BASIC_EPS': '基本每股收益',
+                
+                # 3. 收益与损失类
+                'OTHER_INCOME': '其他收益',
                 'INVEST_INCOME': '投资收益',
+                'INVEST_JOINT_INCOME': '对联营/合营企业投资收益',
                 'FAIR_VALUE_CHANGE_INCOME': '公允价值变动收益',
                 'CREDIT_IMPAIRMENT_LOSS': '信用减值损失',
+                'ASSET_IMPAIRMENT_LOSS': '资产减值损失',
+                'EXCHANGE_INCOME': '汇兑收益',
+                
+                # 4. 利润类
+                'OPERATE_PROFIT': '营业利润',
+                'NONOPERATE_INCOME': '营业外收入',
+                'NONOPERATE_EXPENSE': '营业外支出',
+                'TOTAL_PROFIT': '利润总额',
                 'INCOME_TAX': '所得税费用',
-                # 金融/保险/银行特有
-                'EARNED_PREMIUM': '已赚保费',
-                'SURRENDER_VALUE': '退保金',
-                'NET_COMPENSATE_EXPENSE': '赔付支出净额',
-                'INTEREST_INCOME': '利息净收入',
-                'FEE_COMMISSION_INCOME': '手续费及佣金净收入'
+                'NETPROFIT': '净利润',
+                'CONTINUE_OPERATE_NP': '持续经营净利润',
+                'DISCONTINUE_OPERATE_NP': '终止经营净利润',
+                'PARENT_NETPROFIT': '归母净利润',
+                'MINORITY_INTEREST': '少数股东损益',
+                'DEDUCT_PARENT_NETPROFIT': '扣非净利润',
+                
+                # 5. 每股收益与综合收益
+                'BASIC_EPS': '基本每股收益',
+                'DILUTED_EPS': '稀释每股收益',
+                'TOTAL_COMPREHENSIVE_INCOME': '综合收益总额',
+                'PARENT_COMPREHENSIVE_INCOME': '归母综合收益总额',
+                'MINORITY_COMPREHENSIVE_INCOME': '少数股东综合收益'
             }
             
             # 👇 【改动1】：把 ORG_TYPE 和其他没用的系统标记加进黑名单
